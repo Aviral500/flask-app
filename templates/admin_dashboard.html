@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2ff;
+            padding: 40px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f1f5f9;
+        }
+        .logout {
+            margin-top: 20px;
+            background: #111827;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🛠 Admin Dashboard</h2>
+
+    <!-- Job Description Form -->
+    <form method="POST">
+        <label>Job Description</label>
+        <textarea name="job_description" rows="6" required>
+{{ job.job_description }}
+        </textarea>
+
+        <label>Number of Candidates to Shortlist (Top N)</label>
+        <input type="number" name="top_n" value="{{ job.top_n }}" min="1" required>
+
+        <button type="submit">Update Job Settings</button>
+    </form>
+
+    <!-- Shortlisted Candidates -->
+    <h3 style="margin-top:30px;">🏆 Shortlisted Candidates</h3>
+
+    {% if candidates %}
+    <table>
+        <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+        {% for c in candidates %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.score }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No submissions yet.</p>
+    {% endif %}
+
+    <a href="/admin/logout">
+        <button class="logout">Logout</button>
+    </a>
+</div>
+
+</body>
+</html>

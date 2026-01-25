@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Resume Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #eef2ff, #f8fafc);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            margin-top: 8px;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 25px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .features {
+            margin-top: 25px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .features ul {
+            padding-left: 20px;
+        }
+
+        .features li {
+            margin-bottom: 6px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🤖 AI Resume Analyzer</h2>
+    <p class="subtitle">
+        ATS-style resume evaluation using skill matching, semantic analysis, and AI-based fit prediction
+    </p>
+
+    <form action="/analyze" method="POST" enctype="multipart/form-data">
+        <label>📄 Upload Resume (PDF only)</label>
+        <input type="file" name="resume" accept=".pdf" required>
+
+        <label>🧾 Job Description</label>
+        <textarea name="job_description" rows="6"
+            placeholder="Paste the job description here..."
+            required></textarea>
+
+        <button type="submit">Analyze Resume</button>
+    </form>
+
+    <div class="features">
+        <h3>🔍 What This Analyzer Checks</h3>
+        <ul>
+            <li>✔ Skill match & missing skills</li>
+            <li>✔ Experience relevance</li>
+            <li>✔ TF-IDF semantic similarity</li>
+            <!-- <li>✔ Keyword density (ATS-style)</li> -->
+            <li>✔ Resume readability & length</li>
+            <li>✔ ATS compatibility issues</li>
+            <li>✔ AI-based fit prediction</li>
+            <li>✔ Resume health score</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Built with Flask & Python 3.13 · Resume Screening System
+    </div>
+</div>
+
+</body>
+</html>

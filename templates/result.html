@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Analysis Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+
+        /* Dashboard bars */
+        .metric {
+            margin: 18px 0;
+        }
+        .metric label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .bar {
+            width: 100%;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .fill {
+            height: 26px;
+            line-height: 26px;
+            padding-right: 10px;
+            text-align: right;
+            color: white;
+            font-size: 14px;
+            transition: width 0.8s ease;
+        }
+        .blue { background: linear-gradient(90deg,#2563eb,#3b82f6); }
+        .green { background: linear-gradient(90deg,#16a34a,#22c55e); }
+        .yellow { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+        .purple { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+        .red { background: linear-gradient(90deg,#ef4444,#f87171); }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            margin: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 10px 18px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>📊 Resume Analysis Dashboard</h2>
+
+    <!-- DASHBOARD -->
+    <div class="metric">
+        <label>Overall Resume Health</label>
+        <div class="bar">
+            <div class="fill red" style="width: {{ resume_health }}%;">
+                {{ resume_health }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="metric">
+        <label>Skill Match</label>
+        <div class="bar">
+            <div class="fill green" style="width: {{ skill_score }}%;">
+                {{ skill_score }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="metric">
+        <label>Experience Relevance</label>
+        <div class="bar">
+            <div class="fill yellow" style="width: {{ experience_score }}%;">
+                {{ experience_score }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="metric">
+        <label>Semantic Similarity (TF-IDF)</label>
+        <div class="bar">
+            <div class="fill purple" style="width: {{ tfidf_score }}%;">
+                {{ tfidf_score }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- FIT PREDICTION -->
+    <h3>🤖 AI Fit Prediction</h3>
+    <p class="status">
+        Fit Level: {{ fit.fit_label }}  
+        (Confidence: {{ fit.fit_score }}%)
+    </p>
+
+    <!-- SKILLS -->
+    <h3>🧠 Skill Analysis</h3>
+    <b>Matched Skills:</b><br>
+    {% for skill in skills.matched_skills %}
+        <span class="badge" style="background:#d1fae5;">✔ {{ skill }}</span>
+    {% endfor %}
+
+    <br><br>
+    <b>Missing Skills:</b><br>
+    {% for skill in skills.missing_skills %}
+        <span class="badge" style="background:#fee2e2;">✖ {{ skill }}</span>
+    {% endfor %}
+
+
+    <!-- QUALITY -->
+    <h3>📄 Resume Quality</h3>
+    <p>Readability: <b>{{ readability.readability }}</b></p>
+    <p>ATS Friendly: 
+        <b>
+        {% if ats.ats_friendly %}
+            Yes ✅
+        {% else %}
+            Needs Improvement ⚠️
+        {% endif %}
+        </b>
+    </p>
+
+    {% if not ats.ats_friendly %}
+        <ul>
+            {% for issue in ats.issues %}
+                <li>{{ issue }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <a href="/" class="back">Analyze Another Resume</a>
+</div>
+
+</body>
+</html>

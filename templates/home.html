@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Resume Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+        }
+        .section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .admin-btn {
+            background: #111827;
+        }
+        .note {
+            font-size: 14px;
+            color: #555;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🤖 AI Resume Analyzer</h2>
+
+    <!-- Candidate Section -->
+    <div class="section">
+        <h3>📄 Submit Your Resume</h3>
+        <form action="/analyze" method="POST" enctype="multipart/form-data">
+            <label>Upload Resume (PDF)</label>
+            <input type="file" name="resume" accept=".pdf" required>
+
+            <button type="submit">Submit Resume</button>
+        </form>
+        <p class="note">
+            Your resume will be evaluated automatically using AI-based scoring.
+        </p>
+    </div>
+
+    <!-- Admin Section -->
+    <div class="section">
+        <h3>🔐 Admin Access</h3>
+        <a href="/admin/login">
+            <button class="admin-btn">Login to Admin Dashboard</button>
+        </a>
+        <p class="note">
+            Admins can manage job descriptions and shortlist candidates.
+        </p>
+    </div>
+</div>
+
+</body>
+</html>
