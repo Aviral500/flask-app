@@ -143,7 +143,21 @@
         </form>
     </div>
 
-    <!-- 🔹 Features -->
+    <div class="section">
+    <h3>💼 Apply to Current Job</h3>
+    <p class="subtitle">
+        Upload your resume to apply for the job posted by recruiter
+    </p>
+
+    <form action="/apply" method="POST" enctype="multipart/form-data">
+        <label>📄 Upload Resume (PDF)</label>
+        <input type="file" name="resume" accept=".pdf" required>
+
+        <button type="submit">Apply Now</button>
+    </form>
+</div>
+
+    <!-- 🔹 Features
     <div class="features">
         <h3>🔍 What This Analyzer Checks</h3>
         <ul>
@@ -154,7 +168,7 @@
             <li>✔ ATS compatibility</li>
             <li>✔ AI-based scoring</li>
         </ul>
-    </div>
+    </div> -->
 
     <!-- 🔹 Admin -->
     <div class="section">
@@ -168,9 +182,6 @@
         </a>
     </div>
 
-    <div class="footer">
-        Built with Flask · AI Resume Screening System
-    </div>
 
 </div>
 

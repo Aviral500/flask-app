@@ -15,6 +15,10 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # -------- HOME ----------
 # =========================
 @app.route("/")
+def intro():
+    return render_template("intro.html")
+
+@app.route("/home")
 def home():
     return render_template("home.html")
 
@@ -250,6 +254,24 @@ def generate_suggestions(sections, skills, ats, readability):
     return suggestions
 
 # =========================
+# ---- FIT PREDICTION ----
+# =========================
+def fit_prediction(skill, exp, tfidf):
+    score = round(0.4 * skill + 0.35 * exp + 0.25 * tfidf, 2)
+
+    if score >= 70:
+        label = "Good Fit"
+    elif score >= 45:
+        label = "Moderate Fit"
+    else:
+        label = "Poor Fit"
+
+    return {
+        "fit_score": score,
+        "fit_label": label
+    }
+
+# =========================
 # -------- ROUTES ---------
 # =========================
 
@@ -345,7 +367,51 @@ def logout():
     session.pop("admin", None)
     return redirect("/")
 
+@app.route("/apply", methods=["POST"])
+def apply_job():
+    resume_file = request.files.get("resume")
 
+    if not resume_file or not resume_file.filename.endswith(".pdf"):
+        return "Upload valid PDF"
+
+    job = load_job()
+    jd_text = job["job_description"].lower()
+
+    resume_text = extract_text_from_pdf(resume_file)
+
+    if not resume_text.strip():
+        return "Could not read resume"
+
+    sections = extract_sections(resume_text)
+
+    resume_skills = extract_skills(resume_text)
+    jd_skills = extract_skills(jd_text)
+
+    skill_score = skill_match_score(resume_skills, jd_skills)
+    experience = evaluate_experience(sections["experience"], jd_text)
+    tfidf_score = tfidf_similarity(resume_text, jd_text)
+
+    fit = fit_prediction(skill_score, experience["experience_score"], tfidf_score)
+
+    # 🔥 SAVE candidate for admin
+    candidate_name = extract_candidate_name(resume_text)
+    save_submission(candidate_name, fit["fit_score"])
+
+    readability = readability_score(resume_text)
+    ats = ats_check(resume_text)
+    health = resume_health(skill_score, readability, ats)
+
+    return render_template(
+        "result.html",
+        skill_score=skill_score,
+        experience_score=experience["experience_score"],
+        tfidf_score=tfidf_score,
+        fit=fit,
+        skills=evaluate_skills(resume_skills, jd_skills),
+        readability=readability,
+        ats=ats,
+        resume_health=health
+    )
 
 @app.route("/admin/register", methods=["GET", "POST"])
 def admin_register():
