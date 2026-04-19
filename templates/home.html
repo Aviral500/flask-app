@@ -3,88 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <title>AI Resume Analyzer</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f6f8;
+            background: linear-gradient(120deg, #eef2ff, #f8fafc);
             padding: 40px;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 720px;
             margin: auto;
             background: white;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
+
         h2 {
             text-align: center;
+            margin-bottom: 10px;
         }
-        .section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f1f5f9;
-            border-radius: 8px;
+
+        .subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 25px;
         }
+
         label {
             font-weight: bold;
+            margin-top: 15px;
             display: block;
-            margin-top: 10px;
         }
-        input, button {
+
+        input, textarea, button {
             width: 100%;
-            padding: 12px;
             margin-top: 8px;
+            padding: 12px;
+            font-size: 14px;
         }
+
+        input, textarea {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
         button {
-            background: #2563eb;
+            margin-top: 20px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 15px;
             font-weight: bold;
         }
+
         button:hover {
             opacity: 0.9;
         }
-        .admin-btn {
-            background: #111827;
+
+        .section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
         }
-        .note {
-            font-size: 14px;
-            color: #555;
-            margin-top: 8px;
+
+        .features {
+            margin-top: 25px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .features ul {
+            padding-left: 20px;
+        }
+
+        .features li {
+            margin-bottom: 6px;
+        }
+
+        .admin-btn {
+            background: linear-gradient(90deg, #111827, #1f2937);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 13px;
+            color: #666;
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h2>🤖 AI Resume Analyzer</h2>
 
-    <!-- Candidate Section -->
+    <h2>🤖 AI Resume Analyzer</h2>
+    <p class="subtitle">
+        ATS-style resume evaluation using skill matching, semantic analysis, and AI-based insights
+    </p>
+
+    <!-- 🔹 Recruiter Screening -->
     <div class="section">
-        <h3>📄 Submit Your Resume</h3>
+        <h3>🧾 Job-Based Resume Analysis</h3>
+
         <form action="/analyze" method="POST" enctype="multipart/form-data">
-            <label>Upload Resume (PDF)</label>
+            <label>📄 Upload Resume (PDF only)</label>
             <input type="file" name="resume" accept=".pdf" required>
 
-            <button type="submit">Submit Resume</button>
+            <label>📌 Job Description</label>
+            <textarea name="job_description" rows="5"
+                placeholder="Paste job description here..."
+                required></textarea>
+
+            <button type="submit">Analyze with Job Description</button>
         </form>
-        <p class="note">
-            Your resume will be evaluated automatically using AI-based scoring.
-        </p>
     </div>
 
-    <!-- Admin Section -->
+    <!-- 🔹 Universal Screening -->
+    <div class="section">
+        <h3>📊 Universal Resume Screening</h3>
+        <p class="subtitle">
+            Get general feedback on your resume without a job description
+        </p>
+
+        <form action="/screen" method="POST" enctype="multipart/form-data">
+            <label>📄 Upload Resume (PDF only)</label>
+            <input type="file" name="resume" accept=".pdf" required>
+
+            <button type="submit">Check My Resume</button>
+        </form>
+    </div>
+
+    <!-- 🔹 Features -->
+    <div class="features">
+        <h3>🔍 What This Analyzer Checks</h3>
+        <ul>
+            <li>✔ Skill match & missing skills</li>
+            <li>✔ Experience relevance</li>
+            <li>✔ Semantic similarity (TF-IDF)</li>
+            <li>✔ Resume readability</li>
+            <li>✔ ATS compatibility</li>
+            <li>✔ AI-based scoring</li>
+        </ul>
+    </div>
+
+    <!-- 🔹 Admin -->
     <div class="section">
         <h3>🔐 Admin Access</h3>
+
         <a href="/admin/login">
             <button class="admin-btn">Login to Admin Dashboard</button>
         </a>
-        <p class="note">
-            Admins can manage job descriptions and shortlist candidates.
-        </p>
+        <a href="/admin/register">
+            <button class="admin-btn">Register to Admin Dashboard</button>
+        </a>
     </div>
+
+    <div class="footer">
+        Built with Flask · AI Resume Screening System
+    </div>
+
 </div>
 
 </body>

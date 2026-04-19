@@ -1,8 +1,12 @@
 {
   "admins": [
     {
+      "username": "aryan shukla",
+      "password_hash": "scrypt:32768:8:1$eqVz2Kc8qu3BAIa4$a2128ec3ef27ec6a528ee628d11f7e85867e6ddbd162acbe611ecfc6206e178da6c79e22db0d488479328fb755b8918578d8ed50edf3f75e68fa434ccde8caad"
+    },
+    {
       "username": "admin",
-      "password_hash": "scrypt:32768:8:1$wMjI0mwkUJLNQMEf$11078ca491a2efbc5079da4288089bd21fde8bcb1899a9e31670108e967b15f9a96fe25ba84f2926b5fe083e0223189e2280e04594e493b703f225a138fba8b3"
+      "password_hash": "scrypt:32768:8:1$5spVkJvcERg6vFGJ$fe57e1099506f7b3aff90425c8b1571bee525e7fd6df17e0454d50903fe0bd1bf64ca749c6adb29206538d29484792d0179b1be66e1739d5e7e3a25aa42d4705"
     }
   ]
 }

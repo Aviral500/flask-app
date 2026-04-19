@@ -3,17 +3,24 @@ import pdfplumber
 import re
 import math
 import json
-from collections import Counter
+import os
 from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # =========================
-# -------- HELPERS --------
+# -------- HOME ----------
 # =========================
+@app.route("/")
+def home():
+    return render_template("home.html")
 
-# ---------- PDF ----------
+# =========================
+# -------- PDF ----------
+# =========================
 def extract_text_from_pdf(file):
     text = ""
     try:
@@ -26,9 +33,9 @@ def extract_text_from_pdf(file):
         print("PDF Error:", e)
     return text
 
-
-
-# ---------- JSON ----------
+# =========================
+# -------- JSON ----------
+# =========================
 def load_admins():
     with open("admins.json") as f:
         return json.load(f)["admins"]
@@ -41,27 +48,31 @@ def validate_admin(username, password):
     return False
 
 def load_job():
-    with open("job.json") as f:
-        return json.load(f)
+    try:
+        with open("job.json") as f:
+            return json.load(f)
+    except:
+        return {"job_description": "", "top_n": 5}
 
 def save_job(jd, top_n):
     with open("job.json", "w") as f:
         json.dump({"job_description": jd, "top_n": top_n}, f)
 
 def load_submissions():
-    with open("submissions.json") as f:
-        raw = json.load(f)["submissions"]
+    try:
+        with open("submissions.json") as f:
+            raw = json.load(f)["submissions"]
+    except:
+        raw = []
 
     unique = {}
     for sub in raw:
-        unique[sub["name"]] = sub["score"]  # keeps latest score
+        unique[sub["name"]] = sub["score"]
 
     return [{"name": k, "score": v} for k, v in unique.items()]
 
 def save_submission(name, score):
-    # 🔥 SANITIZE name again (last line of defense)
-    name = name.replace("Name:", "").replace("NAME:", "").strip()
-
+    name = name.replace("Name:", "").strip()
     data = {"submissions": load_submissions()}
 
     for sub in data["submissions"]:
@@ -69,10 +80,7 @@ def save_submission(name, score):
             sub["score"] = score
             break
     else:
-        data["submissions"].append({
-            "name": name,
-            "score": score
-        })
+        data["submissions"].append({"name": name, "score": score})
 
     with open("submissions.json", "w") as f:
         json.dump(data, f, indent=2)
@@ -82,47 +90,32 @@ def get_top_candidates():
     subs = load_submissions()
     return sorted(subs, key=lambda x: x["score"], reverse=True)[:job["top_n"]]
 
+# =========================
+# ----- TEXT LOGIC -------
+# =========================
 def extract_candidate_name(text):
     for line in text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-
-        # 🔥 Clean prefixes
-        line = line.replace("Name:", "").replace("NAME:", "").strip()
-
-        # Accept realistic names only
+        line = line.strip().replace("Name:", "")
         if 1 < len(line.split()) <= 4:
             return line.title()
-
     return "Unknown Candidate"
-
-# =========================
-# ----- SECTION LOGIC -----
-# =========================
 
 def extract_sections(text):
     sections = {"skills": "", "experience": "", "education": ""}
-
     patterns = {
         "skills": r"skills(.*?)(experience|education|projects|$)",
         "experience": r"experience(.*?)(education|projects|skills|$)",
         "education": r"education(.*?)(experience|projects|skills|$)"
     }
-
     for key, pattern in patterns.items():
         match = re.search(pattern, text, re.S)
         if match:
             sections[key] = match.group(1).strip()
-
     return sections
 
-
-
 # =========================
-# ----- SKILL LOGIC -------
+# ----- SKILLS ----------
 # =========================
-
 SKILL_SET = {
     "python", "java", "c++", "flask", "django", "sql", "mysql",
     "machine learning", "deep learning", "nlp",
@@ -144,9 +137,8 @@ def evaluate_skills(resume_skills, jd_skills):
     }
 
 # =========================
-# ---- EXPERIENCE ---------
+# ---- EXPERIENCE --------
 # =========================
-
 STOPWORDS = {"and", "the", "to", "of", "in", "for", "with"}
 
 def experience_keyword_score(exp_text, jd_text):
@@ -163,21 +155,11 @@ def evaluate_experience(exp_text, jd_text):
     return {"experience_score": score, "relevance": status}
 
 # =========================
-# ---- EDUCATION ----------
+# ---- SCORING ----------
 # =========================
-
-def evaluate_education(edu_text):
-    keywords = ["b.tech", "m.tech", "bachelor", "master", "engineering", "computer"]
-    return {"education_alignment": "aligned" if any(k in edu_text for k in keywords) else "neutral"}
-
-# =========================
-# ---- TF-IDF -------------
-# =========================
-
 def tfidf_similarity(text1, text2):
     def tf(word, text):
         return text.count(word) / max(len(text), 1)
-
     def idf(word, docs):
         return math.log(len(docs) / (1 + sum(word in d for d in docs)))
 
@@ -208,51 +190,73 @@ def readability_score(text):
 
 def ats_check(text):
     issues = []
-
     if "|" in text:
-        issues.append("Avoid tables and columns")
-
+        issues.append("Avoid tables")
     if any(ch in text for ch in ["@", "#", "$"]):
         issues.append("Special characters detected")
-
-    return {
-        "ats_friendly": len(issues) == 0,
-        "issues": issues
-    }
+    return {"ats_friendly": len(issues) == 0, "issues": issues}
 
 def resume_health(skill_score, readability, ats):
     score = skill_score
-
     if readability["readability"] == "Excellent":
         score += 10
-
     if ats["ats_friendly"]:
         score += 10
-
     return min(score, 100)
 
 # =========================
-# ---- FIT MODEL ----------
+# ---- UNIVERSAL AI ------
 # =========================
+def detailed_analysis(text, skills, sections):
+    insights = []
+    wc = len(text.split())
 
-def fit_prediction(skill, exp, tfidf):
-    score = round(0.4*skill + 0.35*exp + 0.25*tfidf, 2)
-    label = "Good Fit" if score >= 70 else "Moderate Fit" if score >= 45 else "Poor Fit"
-    return {"fit_score": score, "fit_label": label}
+    if wc < 200:
+        insights.append("Resume is too short")
+    elif wc > 800:
+        insights.append("Resume is too long")
+
+    if not sections["experience"]:
+        insights.append("Missing experience section")
+
+    if len(skills) < 5:
+        insights.append("Low skill diversity")
+
+    return insights
+
+def generate_suggestions(sections, skills, ats, readability):
+    suggestions = []
+
+    if not sections["skills"]:
+        suggestions.append("Add a dedicated Skills section")
+
+    if not sections["experience"]:
+        suggestions.append("Add projects or work experience")
+
+    if len(skills) < 5:
+        suggestions.append("Add more technical skills to strengthen your profile")
+
+    if not ats["ats_friendly"]:
+        suggestions.append("Avoid symbols and use simple formatting for ATS systems")
+
+    if readability["readability"] == "Poor":
+        suggestions.append("Improve sentence clarity and structure")
+
+    # 🔥 Always give at least 2 suggestions
+    if len(suggestions) == 0:
+        suggestions.append("Your resume is well structured. Consider tailoring it for specific roles.")
+        suggestions.append("Add measurable achievements (numbers, impact) to improve effectiveness.")
+
+    return suggestions
 
 # =========================
 # -------- ROUTES ---------
 # =========================
 
-@app.route("/")
-def home():
-    return render_template("home.html")
-
 @app.route("/analyze", methods=["POST"])
 def analyze_resume():
     resume_file = request.files.get("resume")
-    job = load_job()
-    jd_text = job["job_description"].lower()
+    jd_text = request.form.get("job_description", "").lower()
 
     resume_text = extract_text_from_pdf(resume_file)
     sections = extract_sections(resume_text)
@@ -264,35 +268,62 @@ def analyze_resume():
     experience = evaluate_experience(sections["experience"], jd_text)
     tfidf_score = tfidf_similarity(resume_text, jd_text)
 
-    fit = fit_prediction(skill_score, experience["experience_score"], tfidf_score)
-
-    candidate_name = extract_candidate_name(resume_text)
-    save_submission(candidate_name, fit["fit_score"])
-
     readability = readability_score(resume_text)
     ats = ats_check(resume_text)
     health = resume_health(skill_score, readability, ats)
 
-    return render_template(
-        "result.html",
+    return render_template("result.html",
         skill_score=skill_score,
         experience_score=experience["experience_score"],
         tfidf_score=tfidf_score,
-        fit=fit,
-        skills=evaluate_skills(resume_skills, jd_skills),  # ✅ comma added
+        skills=evaluate_skills(resume_skills, jd_skills),
         readability=readability,
         ats=ats,
         resume_health=health
     )
-# ---------- ADMIN ----------
 
-@app.route("/admin/login", methods=["GET", "POST"])
+@app.route("/screen", methods=["POST"])
+def universal_screen():
+    resume_file = request.files.get("resume")
+    text = extract_text_from_pdf(resume_file)
+
+    sections = extract_sections(text)
+    skills = extract_skills(text)
+
+    readability = readability_score(text)
+    ats = ats_check(text)
+
+    skill_score = min(len(skills) * 10, 100)
+    read_score = readability["score"]
+    ats_score = 100 if ats["ats_friendly"] else 60
+
+    final_score = round((0.5*skill_score + 0.3*read_score + 0.2*ats_score), 2)
+
+    insights = detailed_analysis(text, skills, sections)
+    suggestions = generate_suggestions(sections, skills, ats, readability)
+
+    return render_template("universal_result.html",
+        skills=skills,
+        readability=readability,
+        ats=ats,
+        resume_health=final_score,
+        suggestions=suggestions,
+        insights=insights,
+        skill_score=skill_score,
+        read_score=read_score,
+        ats_score=ats_score
+    )
+
+# =========================
+# -------- ADMIN ---------
+# =========================
+@app.route("/admin/login", methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
         if validate_admin(request.form["username"], request.form["password"]):
             session["admin"] = True
             return redirect("/admin/dashboard")
-        return "Invalid credentials", 401
+        return "Invalid credentials"
     return render_template("admin_login.html")
 
 @app.route("/admin/dashboard", methods=["GET", "POST"])
@@ -310,9 +341,62 @@ def admin_dashboard():
     )
 
 @app.route("/admin/logout")
-def admin_logout():
+def logout():
     session.pop("admin", None)
     return redirect("/")
 
+
+
+@app.route("/admin/register", methods=["GET", "POST"])
+def admin_register():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip().lower()
+        password = request.form.get("password", "").strip()
+
+        if not username or not password:
+            return "Fill all fields"
+
+        hashed_password = generate_password_hash(password)
+
+        file_path = "admins.json"
+
+        # 🔥 Ensure file exists
+        if not os.path.exists(file_path):
+            with open(file_path, "w") as f:
+                json.dump({"admins": []}, f)
+
+        # 🔥 Load data safely
+        with open(file_path, "r") as f:
+            try:
+                data = json.load(f)
+            except:
+                data = {"admins": []}
+
+        # 🔥 Ensure correct structure
+        if "admins" not in data:
+            data["admins"] = []
+
+        # 🔥 Check duplicate
+        for admin in data["admins"]:
+            if admin["username"] == username:
+                return "Admin already exists"
+
+        # 🔥 Add admin
+        data["admins"].append({
+            "username": username,
+            "password_hash": hashed_password
+        })
+
+        # 🔥 SAVE (IMPORTANT)
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        print("✅ Admin saved:", username)  # DEBUG
+
+        return redirect("/admin/login")
+
+    return render_template("admin_register.html")
+# =========================
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, use_reloader=False)

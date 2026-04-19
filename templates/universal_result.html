@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Universal Resume Analysis</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(120deg, #eef2ff, #f8fafc);
+    padding: 40px;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+h2 { text-align: center; }
+
+.section { margin-top: 25px; }
+
+.bar {
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 22px;
+    text-align: right;
+    padding-right: 10px;
+    color: white;
+    font-size: 13px;
+}
+
+.blue { background: #3b82f6; }
+.green { background: #22c55e; }
+.orange { background: #f59e0b; }
+
+.badge {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #e0f2fe;
+    border-radius: 6px;
+    margin: 4px;
+}
+
+.alert {
+    background: #fff7ed;
+    padding: 10px;
+    border-left: 4px solid #f59e0b;
+    margin-bottom: 8px;
+}
+
+.good {
+    background: #ecfdf5;
+    border-left: 4px solid #22c55e;
+}
+
+a {
+    display: block;
+    margin-top: 25px;
+    text-align: center;
+    background: #2563eb;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>📊 Universal Resume Analysis</h2>
+
+<!-- FINAL SCORE -->
+<div class="section">
+<h3>🏆 Overall Score</h3>
+<div class="bar">
+<div class="fill blue" style="width: {{ resume_health }}%">
+{{ resume_health }}%
+</div>
+</div>
+</div>
+
+<!-- BREAKDOWN -->
+<div class="section">
+<h3>📈 Score Breakdown</h3>
+
+<p>Skills</p>
+<div class="bar"><div class="fill green" style="width: {{ skill_score }}%">{{ skill_score }}%</div></div>
+
+<p>Readability</p>
+<div class="bar"><div class="fill orange" style="width: {{ read_score }}%">{{ read_score }}%</div></div>
+
+<p>ATS Compatibility</p>
+<div class="bar"><div class="fill blue" style="width: {{ ats_score }}%">{{ ats_score }}%</div></div>
+</div>
+
+<!-- SKILLS -->
+<div class="section">
+<h3>🧠 Skills Detected</h3>
+{% for s in skills %}
+<span class="badge">{{ s }}</span>
+{% endfor %}
+</div>
+
+<!-- ATS -->
+<div class="section">
+<h3>⚙️ ATS Analysis</h3>
+
+{% if ats.ats_friendly %}
+<div class="alert good">✅ Your resume is ATS friendly</div>
+{% else %}
+<div class="alert">⚠️ Issues detected:</div>
+<ul>
+{% for issue in ats.issues %}
+<li>{{ issue }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+
+<!-- INSIGHTS -->
+<div class="section">
+<h3>🔍 Detailed Insights</h3>
+{% for i in insights %}
+<div class="alert">{{ i }}</div>
+{% endfor %}
+</div>
+
+<!-- SUGGESTIONS -->
+<div class="section">
+<h3>💡 Improvement Suggestions</h3>
+<ul>
+{% for s in suggestions %}
+<li>{{ s }}</li>
+{% endfor %}
+</ul>
+</div>
+
+<a href="/">⬅ Back</a>
+
+</div>
+
+</body>
+</html>
